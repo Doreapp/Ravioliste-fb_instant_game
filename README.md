@@ -20,6 +20,10 @@ Développement du jeu
 * Patern = ensemble d'objets. En mettant des pattern à la suite on créer un parcours plus ou moins cohérent
 * Gérer le score, avec l'outil leaderboard fourni par Facebook. Afficher le meilleur score au menu.
 
+### Liens externes
+* Samples (bof) https://github.com/fbsamples/fbinstant-samples
+* Fb developer link https://developers.facebook.com/apps/2974553519263927/dashboard/
+
 ## License 
 MIT License
 
