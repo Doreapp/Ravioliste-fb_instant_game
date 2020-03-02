@@ -4,8 +4,8 @@ Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la R
 ## Développement 
 ### Maintenant 
 Je pense qu'il faut commencer par un écran d'acceuil
-* Logo de la liste
-* Bouton jouer 
+* Logo de la liste *(x) fait, même si à améliorer*
+* Bouton jouer *(x) fait*
 * Affichage des informations sur le joueur (photo, nom?)
 
 ### Ensuite
