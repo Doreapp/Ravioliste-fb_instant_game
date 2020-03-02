@@ -6,7 +6,7 @@ Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la R
 Ecran d'acceuil
 * Logo de la liste *(x) fait*
 * Bouton jouer *(x) fait*
-* Affichage des informations sur le joueur (photo, nom?) *(x) fait
+* Affichage des informations sur le joueur (photo, nom?) *(x) fait*
 
 ### Désormais
 Développement du jeu
