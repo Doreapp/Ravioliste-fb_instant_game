@@ -37,7 +37,7 @@
             });
 
             //TODO juste pour les tests hors messenger: 
-            //downloadAssets();
+            downloadAssets();
             //onStart();
         }
 
@@ -48,6 +48,9 @@
 
         function start() {
             //TODO : hide menu and init
+            $('#main-menu').hide();
+            $('#canvas-container').show();
+            init();
         }
 
         function sendMessage() {
@@ -113,17 +116,18 @@
         <canvas id="canvas">Your browser does not support HTML5.</canvas>
     </div>
 
-    <section id="logo-container">
-        <img src="assets/logo.png" id="img-logo">
-        <center>
-            <h1 class="title">Ravioliste!</h1>
-        </center>
-    </section>
+    <div id="main-menu">
+        <section id="logo-container">
+            <img src="assets/logo.png" id="img-logo">
+            <center>
+                <h1 class="title">Ravioliste!</h1>
+            </center>
+        </section>
 
-    <section id="interaction-button">
-        <input type="button" onclick="start();" value="JOUER" />
-    </section>
-
+        <section id="interaction-button">
+            <input type="button" onclick="start();" value="JOUER" />
+        </section>
+    </div>
 </body>
 
 </html>
