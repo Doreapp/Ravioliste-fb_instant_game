@@ -10,24 +10,14 @@
     box-sizing: border-box;
 }
 
-body {
-    background-color: white;
-    font-family: 'Helvetica';
-    font-size: 3vmin;
-}
 
+/*
 html,
 body {
     overflow: hidden;
     margin: 0 !important;
     padding: 0 !important;
-}
-
-header {
-    background-color: #22B573;
-    color: white;
-    padding: 1em 2em;
-}
+}*/
 
 section {
     margin: 2em;
@@ -42,7 +32,7 @@ input {
 input[type=button] {
     background-color: #22B573;
     color: white;
-    font-size: 1.5em;
+    font-size: 1.6em;
     font-weight: bold;
     -webkit-appearance: none;
 }
@@ -82,8 +72,30 @@ td {
 }
 
 .profile_picture {
-    width: 4em;
-    height: 4em;
+    width: 5em;
+    padding: 0.1em;
+    height: 5em;
+    background-color: #CD2319;
+}
+
+.ravioli-pic {
+    height: 3em;
+}
+
+#player-name-container {
+    background-color: #22B573;
+    color: #ffffff;
+    font-size: 1.5em;
+    height: 2em;
+    flex: 1;
+    padding: 0.5em;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#player-infos {
+    padding-top: 1em;
+    display: flex;
 }
 
 .output {
@@ -99,16 +111,32 @@ td {
 }
 
 #img-logo {
-    width: 40%;
-    margin-left: 30%;
-    margin-top: 30%;
+    width: 60%;
+    margin-left: 20%;
+    margin-top: 20%;
 }
 
 .title {
     width: 100%;
     margin-top: 5%;
+    font-weight: 800;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    ;
 }
 
 #interaction-section {
     margin-top: 20%;
+}
+
+body,
+html {
+    height: 100%;
+    background-color: white;
+    font-family: 'Helvetica';
+    font-size: 3vmin;
+}
+
+#main-menu {
+    height: 100%;
+    background-image: linear-gradient(217deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, 0) 70.71%), linear-gradient(127deg, rgba(34, 181, 115, 0.8), rgba(34, 181, 115, 0) 70.71%), linear-gradient(336deg, rgba(205, 35, 25, .8), rgba(205, 35, 25, 0) 70.71%);
 }

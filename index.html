@@ -33,17 +33,19 @@
                 }
 
                 // Now that assets are loaded, call startGameAsync
-                FBInstant.startGameAsync().then(onStart);
+                FBInstant.startGameAsync().then(onLoadFinished);
             });
 
             //TODO juste pour les tests hors messenger: 
             //downloadAssets();
-            //onStart();
+
         }
 
-        function onStart() {
+        function onLoadFinished() {
             //init();
             //TODO start the game here
+            $('#player-photo').attr('src', FBInstant.player.getPhoto());
+            $('#player-name').html(FBInstant.player.getName());
         }
 
         function start() {
@@ -118,10 +120,21 @@
     </div>
 
     <div id="main-menu">
+        <section>
+            <div id="player-infos">
+                <!-- TODO : clean test values (src, name) -->
+                <img id="player-photo" class="profile_picture" src="https://scontent-cdg2-1.xx.fbcdn.net/v/t1.0-1/cp0/p74x74/13600195_1136496996414850_1271288971452209263_n.jpg?_nc_cat=110&_nc_sid=dbb9e7&_nc_oc=AQk6V2g084HMgR2fzsWtZ17Y5XxTGQ-LDC5cNNZpKwi9zQ0-smnntG5TBsvhO17Y88slDXkR0y_-pa1KwV_8_UN4&_nc_ht=scontent-cdg2-1.xx&oh=d0ecef07ad07d333cc678ab101e40107&oe=5EFB777D"
+                />
+                <div id="player-name-container">
+                    Antoine
+                </div>
+                <img class="ravioli-pic" src="assets/lil_ravioli.png" />
+            </div>
+        </section>
         <section id="logo-container">
             <img src="assets/logo.png" id="img-logo">
             <center>
-                <h1 class="title">Ravioliste!</h1>
+                <h1 class="title">Ravioliste</h1>
             </center>
         </section>
 

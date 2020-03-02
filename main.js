@@ -301,6 +301,7 @@ function startGame() {
         return; //The game have already started
     started = true;
 
+    //Only for offline test
     //downloadAssets();
 
     //init var
