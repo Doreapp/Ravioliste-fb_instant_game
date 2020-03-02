@@ -37,7 +37,7 @@
             });
 
             //TODO juste pour les tests hors messenger: 
-            downloadAssets();
+            //downloadAssets();
             //onStart();
         }
 
@@ -48,9 +48,10 @@
 
         function start() {
             //TODO : hide menu and init
+            console.log("start()");
             $('#main-menu').hide();
             $('#canvas-container').show();
-            init();
+            startGame();
         }
 
         function sendMessage() {

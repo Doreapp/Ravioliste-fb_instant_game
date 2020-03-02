@@ -67,7 +67,7 @@ var assetLoader = (function() {
         // finished callback
         if (assetsLoaded === this.totalAssest) {
             console.log("all assets Loaded");
-            init();
+            //init();
         }
     }
 
@@ -121,6 +121,7 @@ function SpriteSheet(path, frameWidth, frameHeight) {
     };
 
     this.image.src = path;
+    console.log("SpriteSheet<init>() : path = " + path + ", img = " + this.image);
 }
 
 /**
@@ -172,6 +173,62 @@ function Animation(spritesheet, frameSpeed, startFrame, endFrame) {
         );
     };
 }
+
+// ============================================================ Player 
+var player = (function() {
+    var x, y;
+    var width, height;
+    var runAnim, jumpAnim, fallAnim;
+    var currentAnim;
+
+    this.reset = function(blockSize) {
+        console.log("Player init");
+        //Position
+        x = blockSize * 2;
+        y = blockSize * 5;
+
+        //Dimensions
+        width = blockSize;
+        height = 1.5 * blockSize;
+
+        //Animations (running, jumping, falling)
+        var sprite = new SpriteSheet('assets/player.png', 100, 150);
+        runAnim = new Animation(sprite, 4, 0, 11);
+        jumpAnim = new Animation(sprite, 4, 3, 3);
+        fallAnim = new Animation(sprite, 4, 1, 1);
+
+        //shown animation : currently running
+        currentAnim = runAnim;
+    }
+
+    //Draw the game
+    this.draw = function() {
+        //console.log("Player draw");
+        //Draw the current animation
+        currentAnim.draw(x, y, width, height);
+    }
+
+    this.update = function() {
+        //console.log("Player update");
+        //TODO 
+        //update the animation
+        currentAnim.update();
+
+        //manage y speed and gravity
+    }
+
+    this.jump = function() {
+        //TODO
+        // add a var 'jumping' etc
+    }
+
+    return {
+        draw: this.draw,
+        reset: this.reset,
+        update: this.update,
+        jump: this.jump
+    }
+})();
 
 /**
  * ============================================================ Background
@@ -238,14 +295,21 @@ function downloadAssets() {
 var canvas;
 var started = false;
 
-function init() {
+function startGame() {
+    console.log("init()");
     if (started)
         return; //The game have already started
     started = true;
 
+    //downloadAssets();
+
     //init var
     canvas = new MyCanvas();
     background.reset();
+    player.reset(canvas.blockSize);
+
+
+    console.log("var inited, launch game");
 
     //Finally : start the game
     animate();
@@ -270,10 +334,14 @@ var requestAnimFrame = (function() {
  */
 function animate() {
     if (started) {
+        //console.log("animate()");
+        player.update();
+
         requestAnimFrame(animate);
         canvas.clear();
 
         background.draw();
+        player.draw();
 
         // update entities
         //updateWater();
