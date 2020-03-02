@@ -2,15 +2,15 @@
 Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la Ravioliste
 
 ## Développement 
-### Maintenant 
-Je pense qu'il faut commencer par un écran d'acceuil
-* Logo de la liste *(x) fait, même si à améliorer*
+### Fait 
+Ecran d'acceuil
+* Logo de la liste *(x) fait*
 * Bouton jouer *(x) fait*
-* Affichage des informations sur le joueur (photo, nom?)
+* Affichage des informations sur le joueur (photo, nom?) *(x) fait
 
-### Ensuite
+### Désormais
 Développement du jeu
-* Un objet joueur, qui cours
+* Un objet joueur, qui cours *assets fait* 
 * Un objet ground, qui est solide (au début simplement horizontal infini et défillant)
 * La physique du joueur (saut, gravité, contact avec le sol)
 * Ajout de varations : trous dans le sol, plateformes volantes. Et de leur physique (contact avec le joueur)
