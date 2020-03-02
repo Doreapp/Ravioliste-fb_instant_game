@@ -23,6 +23,7 @@ Développement du jeu
 ### Liens externes
 * Samples (bof) https://github.com/fbsamples/fbinstant-samples
 * Fb developer link https://developers.facebook.com/apps/2974553519263927/dashboard/
+* Quelques tutos http://phaser.io/tutorials/getting-started-facebook-instant-games/part1
 
 ## License 
 MIT License
