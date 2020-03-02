@@ -42,8 +42,12 @@
         }
 
         function onStart() {
-            init();
+            //init();
             //TODO start the game here
+        }
+
+        function start() {
+            //TODO : hide menu and init
         }
 
         function sendMessage() {
@@ -98,10 +102,6 @@
             img.src = src;
         }
     </script>
-
-    <header id="header">
-        <h2>Le jeu de la <b>Ravioliste</b></h2>
-    </header>
     <!--
     <section id="test-message">
         <h3>Test sending messages</h3>
@@ -109,9 +109,20 @@
         <input type="button" onclick="sendMessage();" value="Send message" />
     </section>-->
 
-    <div id="canvas-container">
+    <div id="canvas-container" style="display: none;">
         <canvas id="canvas">Your browser does not support HTML5.</canvas>
     </div>
+
+    <section id="logo-container">
+        <img src="assets/logo.png" id="img-logo">
+        <center>
+            <h1 class="title">Ravioliste!</h1>
+        </center>
+    </section>
+
+    <section id="interaction-button">
+        <input type="button" onclick="start();" value="JOUER" />
+    </section>
 
 </body>
 

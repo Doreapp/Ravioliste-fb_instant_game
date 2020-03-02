@@ -42,7 +42,7 @@ input {
 input[type=button] {
     background-color: #22B573;
     color: white;
-    font-size: 1em;
+    font-size: 1.5em;
     font-weight: bold;
     -webkit-appearance: none;
 }
@@ -96,4 +96,19 @@ td {
 
 .error {
     color: red;
+}
+
+#img-logo {
+    width: 40%;
+    margin-left: 30%;
+    margin-top: 30%;
+}
+
+.title {
+    width: 100%;
+    margin-top: 5%;
+}
+
+#interaction-section {
+    margin-top: 20%;
 }
