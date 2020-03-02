@@ -2,6 +2,17 @@
 Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la Ravioliste
 
 ## Développement 
+# En cours (A l'attention de Dems):
+J'ai commencé à développer la visualisation des "blocks" (le sol)
+J'ai fais ça en considérant l'espace du jeu comme quadrillé, ça sera plus simple pour les patterns et leur stockage
+Je vais continuer sur (justement) l'enregistrement de pattern et leur enchainement infini dans le jeu
+Ensuite je pense qu'il faudra commencer à développer la physique (gravité + collision avec blocks)
+*Je pense d'ailleurs que la collision avec les blocks ne va pas être simple, car il y 3 cas possibles :*
+* *Le joueur arrive par le haut, il arrête donc de tombé*
+* *Le joueur arrive par le bas: soit il s'arrête de sauté soit il passe à travers, au choix*
+* *Le joueur arrive de face: dans ce cas là la partie est finie..*
+*Différencier les cas me parrait assez compliqué, a réflechir.*
+
 ### Fait 
 Ecran d'acceuil
 * Logo de la liste *(x) fait*
