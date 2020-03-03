@@ -1,36 +1,87 @@
+//================================================================== MyCanvas
+/**
+ * Personnal class that manage the canvas to draw on
+ * Adapt to the right size 3:4 
+ * Draw the object placed into the game space by scaling their position+dimensions
+ */
 class MyCanvas {
+    /*
+     * Game space : 
+     * The screen is 4:3 
+     * The draw grid is 8:6 
+     */
 
     constructor() {
+        //get the canvas object
         this.canvas = document.getElementById('canvas');
-        //updating canvas size :
-        //this.canvas.width = window.width;
-        //this.canvas.heigth = window.height;
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
 
+        //update the canvas size :
+        var h = window.innerHeight;
+        var w = window.innerWidth;
+        this.topOffset = 0; //invariant sky place above the canvas
+        if (h * 3 >= w * 4) {
+            //Screen to hight:
+            this.topOffset = Math.max(0, h - 4 * w / 3); // 0 min (not really needed)
+        } else {
+            //Screen to large
+            w = 3 * h / 4; //limit the width
+        }
+        //Then, actually change the canvas object dimensions
+        this.canvas.width = w;
+        this.canvas.height = h;
 
+        // Getting values:
         this.ctx = this.canvas.getContext('2d');
-        this.cHeight = this.canvas.height;
-        this.cWidth = this.canvas.width;
+        this.cHeight = h;
+        this.cWidth = w;
 
+        // Setting game values : 
         this.blockSize = 10;
         this.gWidth = 6 * this.blockSize;
         this.scaleToReal = this.cWidth / this.gWidth;
         this.gHeight = this.gWidth * this.cHeight / this.cWidth;
     }
 
+    /**
+     * draw the image, scaled from the game space to the screen dimensions
+     * @param {CanvasImageSource} img image to draw
+     * @param {number} x position where to draw
+     * @param {number} y position where to drw
+     * @param {number} width size of the image 
+     * @param {number} height size of the image
+     */
     draw(img, x, y, width, height) {
-        this.ctx.drawImage(img, x * this.scaleToReal, y * this.scaleToReal, width * this.scaleToReal, height * this.scaleToReal);
+        this.ctx.drawImage(img, x * this.scaleToReal, this.topOffset + y * this.scaleToReal, width * this.scaleToReal, height * this.scaleToReal);
     }
 
+    /**
+     * Draw a frame of the sprite
+     * @param CanvasImageSource} img sprite image
+     * @param {number} x coordinate where to draw 
+     * @param {number} y coordinate where to draw
+     * @param {number} width size of the image 
+     * @param {number} height size of the image 
+     * @param {number} fx frame coordinate in sprite
+     * @param {number} fy  frame coordinate in sprite
+     * @param {number} fWidth frame width
+     * @param {number} fHeight frame height
+     */
     drawSprite(img, x, y, width, height, fx, fy, fWidth, fHeight) {
         this.ctx.drawImage(img, fx, fy, fWidth, fHeight,
-            x * this.scaleToReal, y * this.scaleToReal,
+            x * this.scaleToReal, this.topOffset + y * this.scaleToReal,
             width * this.scaleToReal, height * this.scaleToReal);
     }
 
+    /**
+     * Clear the canvas
+     */
     clear() {
         this.ctx.clearRect(0, 0, this.cWidth, this.cHeight);
+        if (this.topOffset > 0) {
+            //draw a rect above the used canvas
+            this.ctx.fillStyle = "#CCFFFF"; //sky color
+            this.ctx.fillRect(0, 0, this.cWidth, this.topOffset);
+        }
     }
 }
 
@@ -39,6 +90,8 @@ class MyCanvas {
 var assetLoader = (function() {
     // images dictionary
     this.imgs = {
+        'dirt': 'assets/dirt.png',
+        'grass': 'assets/grass.png',
         'logo': 'assets/logo.png',
         'sky': 'assets/sky.png',
         'bg': 'assets/bg.png',
@@ -176,13 +229,14 @@ function Animation(spritesheet, frameSpeed, startFrame, endFrame) {
 
 // ============================================================ Player 
 var player = (function() {
-    var x, y;
-    var width, height;
-    var runAnim, jumpAnim, fallAnim;
-    var currentAnim;
+    var x, y; //game coordinate (x constant)
+    var width, height; //game dimensions 1x1.5
+    var runAnim, jumpAnim, fallAnim; //animations
+    var currentAnim; //current drawn animation
 
     this.reset = function(blockSize) {
         console.log("Player init");
+
         //Position
         x = blockSize * 2;
         y = blockSize * 5;
@@ -193,7 +247,7 @@ var player = (function() {
 
         //Animations (running, jumping, falling)
         var sprite = new SpriteSheet('assets/player.png', 100, 150);
-        runAnim = new Animation(sprite, 4, 0, 11);
+        runAnim = new Animation(sprite, 3, 0, 11);
         jumpAnim = new Animation(sprite, 4, 3, 3);
         fallAnim = new Animation(sprite, 4, 1, 1);
 
@@ -201,22 +255,21 @@ var player = (function() {
         currentAnim = runAnim;
     }
 
-    //Draw the game
+    //Draw the player
     this.draw = function() {
-        //console.log("Player draw");
         //Draw the current animation
         currentAnim.draw(x, y, width, height);
     }
 
+    //Update the player
     this.update = function() {
-        //console.log("Player update");
-        //TODO 
         //update the animation
         currentAnim.update();
 
-        //manage y speed and gravity
+        //TODO manage y speed and gravity
     }
 
+    //Ask the player to jumpe
     this.jump = function() {
         //TODO
         // add a var 'jumping' etc
@@ -284,9 +337,53 @@ var background = (function() {
     };
 })();
 
+//============================================================= environement
+var environement = (function() {
+    //Manage all the blocks 
+    var blocks = [];
+
+    // reset the environnement (init)
+    this.reset = function() {
+        //see Patern class into block.js file
+        var p = new Patern(assetLoader.imgs);
+        p.fulfill(canvas, blocks, 5);
+        p.fulfill(canvas, blocks, 12);
+        p.fulfill(canvas, blocks, 19);
+    }
+
+    // update the environnement 
+    //@param {number} speed : the speed of the player
+    this.update = function(speed) {
+        var length = blocks.length;
+        for (let i = 0; i < length; i++) {
+            blocks[i].update(speed);
+            if (blocks[i].outside) {
+                blocks.splice(i, 1);
+                i--;
+                length--;
+            }
+        }
+    }
+
+    //draw the environnement
+    this.draw = function() {
+        for (let i in blocks) {
+            blocks[i].draw(canvas);
+        }
+    }
+
+
+    return {
+        update: this.update,
+        reset: this.reset,
+        draw: this.draw
+    };
+})();
+
 
 //======================================================= GLOBAL FUNCTIONS
 
+// download global assets
 function downloadAssets() {
     assetLoader.downloadAll();
 }
@@ -295,20 +392,21 @@ function downloadAssets() {
 var canvas;
 var started = false;
 
+//Really start the game
 function startGame() {
-    console.log("init()");
+    console.log("startGame()");
     if (started)
         return; //The game have already started
     started = true;
 
-    //Only for offline test
-    //downloadAssets();
+    // /!\ Only for offline test
+    downloadAssets();
 
-    //init var
+    //init variables
     canvas = new MyCanvas();
     background.reset();
     player.reset(canvas.blockSize);
-
+    environement.reset();
 
     console.log("var inited, launch game");
 
@@ -317,7 +415,7 @@ function startGame() {
 }
 
 /**
- * Request Animation Polyfill
+ * Request Animation Polyfill (updaete what's drawn)
  */
 var requestAnimFrame = (function() {
     return window.requestAnimationFrame ||
@@ -336,20 +434,20 @@ var requestAnimFrame = (function() {
 function animate() {
     if (started) {
         //console.log("animate()");
-        player.update();
 
+        //1 update 
+        player.update();
+        environement.update(0.6);
+
+        //2 check collisins (TODO)
+
+        //3 draw game 
         requestAnimFrame(animate);
         canvas.clear();
 
-        background.draw();
+        background.draw(); //(update and draw)
+        environement.draw();
         player.draw();
-
-        // update entities
-        //updateWater();
-        //updateEnvironment();
-        //updatePlayer();
-        //updateGround();
-        //updateEnemies();
 
         // draw the score TODO
         //canvas.ctx.fillText('Score: ' + score, 20, 20);
