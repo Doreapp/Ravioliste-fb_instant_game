@@ -83,6 +83,18 @@ class MyCanvas {
             this.ctx.fillRect(0, 0, this.cWidth, this.topOffset);
         }
     }
+
+    /**
+     * 
+     * @param {Rect} rect 
+     * @param {colorString} color 
+     */
+    drawRect(rect, color) {
+        this.ctx.fillStyle = color; //sky color
+        this.ctx.fillRect(rect.l * this.scaleToReal, this.topOffset + rect.t * this.scaleToReal,
+            (rect.r - rect.l) * this.scaleToReal,
+            (rect.b - rect.t) * this.scaleToReal);
+    }
 }
 
 //======================================================= Asset pre-loader object. Loads all images
@@ -228,60 +240,98 @@ function Animation(spritesheet, frameSpeed, startFrame, endFrame) {
 }
 
 // ============================================================ Player 
-var player = (function() {
-    var x, y; //game coordinate (x constant)
-    var width, height; //game dimensions 1x1.5
-    var runAnim, jumpAnim, fallAnim; //animations
-    var currentAnim; //current drawn animation
-
-    this.reset = function(blockSize) {
-        console.log("Player init");
+class Player {
+    //var x, y; //game coordinate (x constant)
+    //var width, height; //game dimensions 1x1.5
+    //var runAnim, jumpAnim, fallAnim; //animations
+    //var currentAnim; //current drawn animation
+    constructor(blockSize) {
+        console.log("Player<init>");
 
         //Position
-        x = blockSize * 2;
-        y = blockSize * 5;
+        this.x = blockSize * 2;
+        this.y = blockSize * 2.55;
+        this.advencment = 0;
+        this.deltaX = 0.15 * blockSize;
+        this.deltaY = 0.04 * blockSize;
+        this.gravity = 0.2;
+        this.speedY = 0;
+        this.falling = false;
+        this.jumpSpeed = 4;
 
         //Dimensions
-        width = blockSize;
-        height = 1.5 * blockSize;
+        this.width = blockSize;
+        this.height = 1.5 * blockSize;
 
         //Animations (running, jumping, falling)
         var sprite = new SpriteSheet('assets/player.png', 100, 150);
-        runAnim = new Animation(sprite, 3, 0, 11);
-        jumpAnim = new Animation(sprite, 4, 3, 3);
-        fallAnim = new Animation(sprite, 4, 1, 1);
+        this.runAnim = new Animation(sprite, 3, 0, 11);
+        this.jumpAnim = new Animation(sprite, 4, 3, 3);
+        //this.fallAnim = new Animation(sprite, 4, 1, 1);
 
         //shown animation : currently running
-        currentAnim = runAnim;
+        this.currentAnim = this.runAnim;
     }
 
     //Draw the player
-    this.draw = function() {
+    draw() {
+        console.log("player.draw()");
         //Draw the current animation
-        currentAnim.draw(x, y, width, height);
+
+        this.currentAnim.draw(this.x, this.y, this.width, this.height);
     }
 
     //Update the player
-    this.update = function() {
+    update() {
         //update the animation
-        currentAnim.update();
+        this.currentAnim.update();
 
+        if (this.falling) {
+            this.y += this.speedY;
+            this.speedY += this.gravity;
+        }
         //TODO manage y speed and gravity
     }
 
-    //Ask the player to jumpe
-    this.jump = function() {
-        //TODO
-        // add a var 'jumping' etc
+    stopVerticalMove(dy) {
+        this.y += dy;
+        this.falling = false;
+        this.speedY = 0;
+        this.currentAnim = this.runAnim;
     }
 
-    return {
-        draw: this.draw,
-        reset: this.reset,
-        update: this.update,
-        jump: this.jump
+    //Ask the player to jumpe
+    jump() {
+        if (!started || this.falling)
+            return;
+        console.log("Player.jump()");
+        //TODO
+        // add a var 'jumping' etc
+        this.falling = true;
+        this.currentAnim = this.jumpAnim;
+        this.speedY = -this.jumpSpeed;
     }
-})();
+
+    get left() {
+        return this.x + this.deltaX;
+    }
+
+    get right() {
+        return this.x + this.width - this.deltaX;
+    }
+
+    get top() {
+        return this.y + this.deltaY;
+    }
+
+    get bottom() {
+        return this.y + this.height - this.deltaY;
+    }
+
+    get hitbox() {
+        return new Rect(this.left, this.top, this.right, this.bottom);
+    }
+}
 
 /**
  * ============================================================ Background
@@ -346,9 +396,10 @@ var environement = (function() {
     this.reset = function() {
         //see Patern class into block.js file
         var p = new Patern(assetLoader.imgs);
-        p.fulfill(canvas, blocks, 5);
-        p.fulfill(canvas, blocks, 12);
-        p.fulfill(canvas, blocks, 19);
+        p.fulfill(canvas, blocks, 0);
+        p.fulfill(canvas, blocks, 7);
+        p.fulfill(canvas, blocks, 14);
+        p.fulfill(canvas, blocks, 21);
     }
 
     // update the environnement 
@@ -372,11 +423,39 @@ var environement = (function() {
         }
     }
 
+    //check collisions
+    this.checkCollisions = function(player) {
+        var hitbox = player.hitbox;
+        var hasGround = false;
+
+        for (let i in blocks) {
+            if (blocks[i].mayCollide(hitbox)) {
+                if (blocks[i].collide(player, hitbox)) {
+                    console.log("environnement.checkColisions: player is dead!");
+                    return true;
+                }
+                if (!hasGround) {
+                    hasGround = blocks[i].isGround(hitbox);
+                }
+            }
+        }
+        //the player fall if he hasn't ground under his feet
+        if (hasGround && player.falling) {
+            console.log("found ground");
+            player.stopVerticalMove(0);
+        } else if (!hasGround && !player.falling) {
+            player.falling = true;
+        }
+
+        return false;
+    }
+
 
     return {
         update: this.update,
         reset: this.reset,
-        draw: this.draw
+        draw: this.draw,
+        checkCollisions: this.checkCollisions
     };
 })();
 
@@ -391,6 +470,7 @@ function downloadAssets() {
 //Variables
 var canvas;
 var started = false;
+var player;
 
 //Really start the game
 function startGame() {
@@ -405,8 +485,12 @@ function startGame() {
     //init variables
     canvas = new MyCanvas();
     background.reset();
-    player.reset(canvas.blockSize);
+    player = new Player(canvas.blockSize);
     environement.reset();
+
+    canvas.canvas.onclick = function() {
+        player.jump();
+    }
 
     console.log("var inited, launch game");
 
@@ -433,6 +517,7 @@ var requestAnimFrame = (function() {
  */
 function animate() {
     if (started) {
+        var drawHitboxes = false;
         //console.log("animate()");
 
         //1 update 
@@ -440,6 +525,9 @@ function animate() {
         environement.update(0.6);
 
         //2 check collisins (TODO)
+        if (environement.checkCollisions(player)) {
+            console.log("animate() : Game Over");
+        }
 
         //3 draw game 
         requestAnimFrame(animate);
@@ -447,6 +535,9 @@ function animate() {
 
         background.draw(); //(update and draw)
         environement.draw();
+        if (drawHitboxes) {
+            canvas.drawRect(player.hitbox, "#b00000")
+        }
         player.draw();
 
         // draw the score TODO
