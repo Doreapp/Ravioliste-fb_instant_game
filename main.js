@@ -270,10 +270,10 @@ class Player {
         this.advencment = 0;
         this.deltaX = 0.15 * blockSize;
         this.deltaY = 0.04 * blockSize;
-        this.gravity = 0.17;
+        this.gravity = 0.2;
         this.speedY = 0;
         this.falling = false;
-        this.jumpSpeed = 3.5;
+        this.jumpSpeed = 3.7;
 
         //Dimensions
         this.width = blockSize;
@@ -287,6 +287,7 @@ class Player {
 
         //shown animation : currently running
         this.currentAnim = this.runAnim;
+        this.wantsToJump = false;
     }
 
     //Draw the player
@@ -311,21 +312,38 @@ class Player {
     }
 
     stopVerticalMove(dy) {
+        if (dy == 0 && this.speedY == -this.jumpSpeed)
+            return;
+        console.log("stopVerticalMove(" + dy + ")");
         //console.log("stopVerticalMove(" + dy + ") curr " + this.y);
         this.y += dy;
         //console.log("stopVerticalMove(" + dy + ") new " + this.y);
         this.falling = false;
         this.speedY = 0;
         this.currentAnim = this.runAnim;
+
+        if (this.wantsToJump) {
+            console.log("his wants to jump is joined");
+            this.jump();
+        }
     }
 
     //Ask the player to jumpe
     jump() {
-        if (!started || this.falling)
+        if (!started)
             return;
+
+        if (this.falling) {
+            console.log("wants to jump");
+            this.wantsToJump = true;
+            return;
+        }
+        this.wantsToJump = false;
         //console.log("Player.jump()");
         //TODO
         // add a var 'jumping' etc
+
+        console.log("jump really");
         this.falling = true;
         this.currentAnim = this.jumpAnim;
         this.speedY = -this.jumpSpeed;
@@ -551,7 +569,7 @@ function startGame() {
     environement.reset();
     score = 0;
 
-    canvas.canvas.onclick = function() {
+    canvas.canvas.ontouchstart = function() {
         player.jump();
     }
 
