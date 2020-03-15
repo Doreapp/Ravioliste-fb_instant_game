@@ -1,30 +1,17 @@
 # Ravioliste-fb_instant_game
 Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la Ravioliste
 
-## Développement 
-# En cours (A l'attention de Dems):
-...
-
-### Fait 
-Ecran d'acceuil
-* Logo de la liste *(x) fait*
-* Bouton jouer *(x) fait*
-* Affichage des informations sur le joueur (photo, nom?) *(x) fait*
-* Un objet joueur, qui cours *(x) fait* 
-* Des objets solides (sol) *(x) fait*
-* La physique du joueur (saut, gravité, contact avec le sol) *(x) fait
-
-### Désormais
-Développement du jeu
-* Gestion des paterns (stockage, lecture, ajout aléatoire)
-* Gestion de la fin du jeu + score --> Ecran game over, affichage du score, enregistrement du meilleur score, btn rejouer
-
-### Ensuite
-* Affichage du meilleur score sur écran d'acceuil
-* Ajout de patterns + objets (voir si possibilité de laisser les gens de la liste ajouter leurs propres paterns + objets ?) 
+## Fichiers
+* index.html : affichage html + scripts facebook (score/leaderboard + messages) + scripts d'affichage
+* main.js : corps du code (assetsLoader, canvas, Sprite, Player et fonctions globales du jeu : jump(), animate(), gameOver())
+* blocks.js : gère la génération de pattern (Pattern et PatternProvider) et les blocks + collision (Block)
+* patterns.json : stockage des différents patterns
+* style.css : stylesheet
+* autres : fichiers de config de facebook
+* assets : contient les images utilisées
 
 ### Liens externes
-* Samples (bof) https://github.com/fbsamples/fbinstant-samples
+* Samples https://github.com/fbsamples/fbinstant-samples
 * Fb developer link https://developers.facebook.com/apps/2974553519263927/dashboard/
 * Quelques tutos http://phaser.io/tutorials/getting-started-facebook-instant-games/part1
 
