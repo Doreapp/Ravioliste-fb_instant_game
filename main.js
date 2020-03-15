@@ -40,6 +40,7 @@ class MyCanvas {
         this.gWidth = 6 * this.blockSize;
         this.scaleToReal = this.cWidth / this.gWidth;
         this.gHeight = this.gWidth * this.cHeight / this.cWidth;
+
     }
 
     /**
@@ -51,7 +52,8 @@ class MyCanvas {
      * @param {number} height size of the image
      */
     draw(img, x, y, width, height) {
-        this.ctx.drawImage(img, x * this.scaleToReal, this.topOffset + y * this.scaleToReal, width * this.scaleToReal, height * this.scaleToReal);
+        this.ctx.drawImage(img, x * this.scaleToReal, this.topOffset + y * this.scaleToReal,
+            width * this.scaleToReal, height * this.scaleToReal);
     }
 
     /**
@@ -70,6 +72,12 @@ class MyCanvas {
         this.ctx.drawImage(img, fx, fy, fWidth, fHeight,
             x * this.scaleToReal, this.topOffset + y * this.scaleToReal,
             width * this.scaleToReal, height * this.scaleToReal);
+    }
+
+    drawScore(score) {
+        this.ctx.font = this.cWidth / 25 + "px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.fillText("Score: " + score, this.cWidth / 25, this.cWidth / 12);
     }
 
     /**
@@ -107,7 +115,15 @@ var assetLoader = (function() {
         'logo': 'assets/logo.png',
         'sky': 'assets/sky.png',
         'bg': 'assets/bg.png',
-        'backdrop': 'assets/backdrop.png'
+        'backdrop': 'assets/backdrop.png',
+        'ravioli': 'assets/ravioli_couleur.png',
+        'rhino': 'assets/rhino.png',
+        'barbecue': 'assets/barbecue.png',
+        'coffee': 'assets/coffee.png',
+        'burger': 'assets/burger.png',
+        'linux': 'assets/linux.png',
+        'sofa': 'assets/sofa.png',
+        'sumo': 'assets/sumo.png',
     };
 
     var assetsLoaded = 0; // how many assets have been loaded
@@ -186,7 +202,7 @@ function SpriteSheet(path, frameWidth, frameHeight) {
     };
 
     this.image.src = path;
-    console.log("SpriteSheet<init>() : path = " + path + ", img = " + this.image);
+    //console.log("SpriteSheet<init>() : path =" + path + ", img =" + this.image);
 }
 
 /**
@@ -246,7 +262,7 @@ class Player {
     //var runAnim, jumpAnim, fallAnim; //animations
     //var currentAnim; //current drawn animation
     constructor(blockSize) {
-        console.log("Player<init>");
+        //console.log("Player<init>");
 
         //Position
         this.x = blockSize * 2;
@@ -254,18 +270,18 @@ class Player {
         this.advencment = 0;
         this.deltaX = 0.15 * blockSize;
         this.deltaY = 0.04 * blockSize;
-        this.gravity = 0.2;
+        this.gravity = 0.17;
         this.speedY = 0;
         this.falling = false;
-        this.jumpSpeed = 4;
+        this.jumpSpeed = 3.5;
 
         //Dimensions
         this.width = blockSize;
         this.height = 1.5 * blockSize;
 
         //Animations (running, jumping, falling)
-        var sprite = new SpriteSheet('assets/player.png', 100, 150);
-        this.runAnim = new Animation(sprite, 3, 0, 11);
+        var sprite = new SpriteSheet('assets/player2.png', 102, 113);
+        this.runAnim = new Animation(sprite, 2, 0, 9);
         this.jumpAnim = new Animation(sprite, 4, 3, 3);
         //this.fallAnim = new Animation(sprite, 4, 1, 1);
 
@@ -275,7 +291,6 @@ class Player {
 
     //Draw the player
     draw() {
-        console.log("player.draw()");
         //Draw the current animation
 
         this.currentAnim.draw(this.x, this.y, this.width, this.height);
@@ -290,11 +305,15 @@ class Player {
             this.y += this.speedY;
             this.speedY += this.gravity;
         }
+
+        return this.y <= 8 * this.width; //trick : game height = 8*bs, this.width = bs...
         //TODO manage y speed and gravity
     }
 
     stopVerticalMove(dy) {
+        //console.log("stopVerticalMove(" + dy + ") curr " + this.y);
         this.y += dy;
+        //console.log("stopVerticalMove(" + dy + ") new " + this.y);
         this.falling = false;
         this.speedY = 0;
         this.currentAnim = this.runAnim;
@@ -304,7 +323,7 @@ class Player {
     jump() {
         if (!started || this.falling)
             return;
-        console.log("Player.jump()");
+        //console.log("Player.jump()");
         //TODO
         // add a var 'jumping' etc
         this.falling = true;
@@ -354,17 +373,17 @@ var background = (function() {
         backdrop.x -= backdrop.speed;
 
         // draw images side by side to loop
-        canvas.draw(assetLoader.imgs.sky, sky.x, 0, bgWidth, bgHeight);
-        canvas.draw(assetLoader.imgs.sky, sky.x + bgWidth, 0, bgWidth, bgHeight);
+        canvas.draw(assetLoader.imgs.sky, sky.x, 0, 120, 80);
+        canvas.draw(assetLoader.imgs.sky, sky.x + 120, 0, 120, 80);
 
-        canvas.draw(assetLoader.imgs.backdrop, backdrop.x, 0, bgWidth, bgHeight);
-        canvas.draw(assetLoader.imgs.backdrop, backdrop.x + bgWidth, 0, bgWidth, bgHeight);
+        canvas.draw(assetLoader.imgs.backdrop, backdrop.x, 0, 400, 80);
+        canvas.draw(assetLoader.imgs.backdrop, backdrop.x + 400, 0, 400, 80);
 
 
         // If the image scrolled off the screen, reset
-        if (sky.x + bgWidth <= 0)
+        if (sky.x + 120 <= 0)
             sky.x = 0;
-        if (backdrop.x + bgWidth <= 0)
+        if (backdrop.x + 400 <= 0)
             backdrop.x = 0;
     };
 
@@ -387,19 +406,46 @@ var background = (function() {
     };
 })();
 
+var score;
+
 //============================================================= environement
 var environement = (function() {
     //Manage all the blocks 
     var blocks = [];
 
+    var end = 0;
+
+    this.destroy = function destroyObject(object) {
+        for (let i = 0; i < blocks.length; i++) {
+            if (blocks[i] === object) {
+                blocks.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    this.grab = function grabObject(object) {
+        destroy(object)
+
+        score += 1000;
+    }
+
+    var editer = {
+        destroy: this.destroy,
+        grab: this.grab
+    }
+
+
+
+
+
     // reset the environnement (init)
     this.reset = function() {
         //see Patern class into block.js file
-        var p = new Patern(assetLoader.imgs);
-        p.fulfill(canvas, blocks, 0);
-        p.fulfill(canvas, blocks, 7);
-        p.fulfill(canvas, blocks, 14);
-        p.fulfill(canvas, blocks, 21);
+        blocks = [];
+        end = 8 * canvas.blockSize;;
+        patternProvider.flatPattern(canvas, blocks, 0, 8);
+        addPattern();
     }
 
     // update the environnement 
@@ -413,6 +459,18 @@ var environement = (function() {
                 i--;
                 length--;
             }
+        }
+        end -= speed;
+        if (end <= 9 * canvas.blockSize) {
+            addPattern();
+        }
+    }
+
+    this.addPattern = function() {
+        while (end <= 9 * canvas.blockSize) {
+            var added = patternProvider.fulfillPattern(canvas, blocks, end / canvas.blockSize, editer);
+            end = end + added;
+            //console.log("added = " + added + " | end = " + end);
         }
     }
 
@@ -430,18 +488,19 @@ var environement = (function() {
 
         for (let i in blocks) {
             if (blocks[i].mayCollide(hitbox)) {
+                //console.log("block may collide : " + blocks[i]);
                 if (blocks[i].collide(player, hitbox)) {
-                    console.log("environnement.checkColisions: player is dead!");
+                    //console.log("environnement.checkColisions: player is dead!");
                     return true;
                 }
                 if (!hasGround) {
-                    hasGround = blocks[i].isGround(hitbox);
+                    hasGround = blocks[i] != undefined && blocks[i].isGround(hitbox);
                 }
             }
         }
         //the player fall if he hasn't ground under his feet
         if (hasGround && player.falling) {
-            console.log("found ground");
+            //console.log("found ground");
             player.stopVerticalMove(0);
         } else if (!hasGround && !player.falling) {
             player.falling = true;
@@ -462,9 +521,12 @@ var environement = (function() {
 
 //======================================================= GLOBAL FUNCTIONS
 
+var patternProvider;
+
 // download global assets
 function downloadAssets() {
     assetLoader.downloadAll();
+    patternProvider = new PatternProvider(assetLoader.imgs);
 }
 
 //Variables
@@ -474,25 +536,26 @@ var player;
 
 //Really start the game
 function startGame() {
-    console.log("startGame()");
+    //console.log("startGame()");
     if (started)
         return; //The game have already started
     started = true;
 
     // /!\ Only for offline test
-    downloadAssets();
+    //downloadAssets();
 
     //init variables
     canvas = new MyCanvas();
     background.reset();
     player = new Player(canvas.blockSize);
     environement.reset();
+    score = 0;
 
     canvas.canvas.onclick = function() {
         player.jump();
     }
 
-    console.log("var inited, launch game");
+    //console.log("var inited, launch game");
 
     //Finally : start the game
     animate();
@@ -513,6 +576,17 @@ var requestAnimFrame = (function() {
 })();
 
 /**
+ * Game over : called when the player dies
+ */
+function gameOver() {
+    //console.log("Game over");
+    //TODO :
+    started = false; //stop the game loop
+    saveScore(score);
+    loser(); //show the 'game over' menu
+}
+
+/**
  * Game loop
  */
 function animate() {
@@ -521,12 +595,15 @@ function animate() {
         //console.log("animate()");
 
         //1 update 
-        player.update();
-        environement.update(0.6);
+        if (!player.update()) {
+            //the player fall down
+            gameOver();
+        }
+        environement.update(0.7);
 
         //2 check collisins (TODO)
         if (environement.checkCollisions(player)) {
-            console.log("animate() : Game Over");
+            gameOver();
         }
 
         //3 draw game 
@@ -539,6 +616,9 @@ function animate() {
             canvas.drawRect(player.hitbox, "#b00000")
         }
         player.draw();
+        canvas.drawScore(score);
+
+        score++;
 
         // draw the score TODO
         //canvas.ctx.fillText('Score: ' + score, 20, 20);

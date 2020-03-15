@@ -20,6 +20,9 @@
     <script src="main.js"></script>
     <script type="text/javascript">
         let display = window.Display;
+        let bestScore = 0;
+        let contextID = null;
+        let displayMessages = false;
 
         window.onload = function() {
             $('#context-section, #send-section').hide();
@@ -38,8 +41,9 @@
             });
 
             //TODO juste pour les tests hors messenger: 
-            //downloadAssets();
-
+            downloadAssets();
+            //TEST
+            //new PatternProvider();
         }
 
         function onLoadFinished() {
@@ -47,11 +51,14 @@
             //TODO start the game here
             $('#player-photo').attr('src', FBInstant.player.getPhoto());
             $('#player-name').html(FBInstant.player.getName());
+            contextID = FBInstant.context.getID();
+            fetchBestScore();
         }
 
         function start() {
-            //TODO : hide menu and init
+            //hide menu and init
             console.log("start()");
+            sendStartMessage();
             $('#main-menu').hide();
             $('#canvas-container').show();
             startGame();
@@ -96,6 +103,88 @@
             );
         }
 
+        function sendStartMessage() {
+            if (!displayMessages)
+                return;
+            let player = FBInstant.player.getName();
+            let payload = {
+                action: 'CUSTOM',
+                cta: 'Play!',
+                text: {
+                    default: player + ' starts playing to Ravioliste\' game !',
+                    localizations: {
+                        en_US: player + ' starts playing to Ravioliste\' game !',
+                        fr_FR: player + ' a commencé à jouer au jeu de la Ravioliste !'
+                    }
+                },
+                template: 'play_turn',
+                data: {
+                    myCustomData: '42'
+                },
+                strategy: 'IMMEDIATE',
+                notification: 'NO_PUSH'
+            };
+
+            toDataURL(
+                './assets/message-img.png',
+                function(dataUrl) {
+                    payload.image = dataUrl;
+                    // This will post a custom update.
+                    // If the game is played in a messenger chat thread,
+                    // this will post a message into the thread with the specified image and text message.
+                    // When others launch the game from this message,
+                    // those game sessions will be able to access the specified blob
+                    // of data through FBInstant.getEntryPointData()
+                    FBInstant.updateAsync(payload).then(function() {
+                        display.success('Message was posted!');
+                    }).catch(function(error) {
+                        display.error('Message was not posted: ' + error.message);
+                    });
+                }
+            );
+        }
+
+        function sendBeatBestscore(bestScore) {
+            if (!displayMessages)
+                return;
+            let player = FBInstant.player.getName();
+            let payload = {
+                action: 'CUSTOM',
+                cta: 'Play!',
+                text: {
+                    default: player + ' beat his best score : ' + bestScore + ' !',
+                    localizations: {
+                        en_US: player + ' beat his best score : ' + bestScore + ' !',
+                        fr_FR: player + ' a battu son meilleur score : ' + bestScore + ' !'
+                    }
+                },
+                template: 'play_turn',
+                data: {
+                    myCustomData: '42'
+                },
+                strategy: 'IMMEDIATE',
+                notification: 'NO_PUSH'
+            };
+
+            toDataURL(
+                './assets/message-img.png',
+                function(dataUrl) {
+                    payload.image = dataUrl;
+                    // This will post a custom update.
+                    // If the game is played in a messenger chat thread,
+                    // this will post a message into the thread with the specified image and text message.
+                    // When others launch the game from this message,
+                    // those game sessions will be able to access the specified blob
+                    // of data through FBInstant.getEntryPointData()
+                    FBInstant.updateAsync(payload).then(function() {
+                        display.success('Message was posted!');
+                    }).catch(function(error) {
+                        display.error('Message was not posted: ' + error.message);
+                    });
+                }
+            );
+        }
+
         function toDataURL(src, callback) {
             let img = new Image();
             img.crossOrigin = 'Anonymous';
@@ -107,6 +196,59 @@
                 callback(canvas.toDataURL());
             };
             img.src = src;
+        }
+
+        function getLeaderboardName() {
+            // If the leaderboard is contextual, i.e. it is set as contextual in the
+            // leaderboard configuration and this session occurs in a message thread,
+            // this specific context should append ".<Context ID>" to
+            // the name of the leaderboard
+            if (contextID != null) {
+                return "MainLeaderboard" + '.' + contextID;
+            }
+            return "MainLeaderboard";
+        }
+
+        function saveScore(score) {
+            let tvScore = document.getElementById("game_over_score");
+
+            if (score < bestScore) {
+                tvScore.innerText = "Votre score : " + score + "\nA seulement " + Math.trunc((bestScore - score) / 1000) + " raviolis de votre meilleur score";
+                return;
+            }
+
+            bestScore = score;
+            tvScore.innerText = "Nouveau meilleur score !\nVous avez fait " + score;
+            sendBeatBestscore();
+
+            FBInstant
+                .getLeaderboardAsync(getLeaderboardName())
+                .then(leaderboard => {
+                    console.log("leaderboardRetreived : " + leaderboard.getName());
+                    return leaderboard.setScoreAsync(score);
+                })
+                .then(() => {
+                    console.log('Score saved');
+                    fetchBestScore();
+                })
+                .catch(error => console.error(error));
+        }
+
+        function fetchBestScore() {
+            FBInstant
+                .getLeaderboardAsync(getLeaderboardName())
+                .then(leaderboard => leaderboard.getPlayerEntryAsync())
+                .then(entry => {
+                    console.log(
+                        entry.getRank() + '. ' +
+                        entry.getPlayer().getName() + ': ' +
+                        entry.getScore()
+                    );
+
+                    bestScore = entry.getScore();
+                    document.getElementById('score_rank')
+                        .innerText = "Vous êtes " + entry.getRank() + "e, avec un score " + bestScore;
+                }).catch(error => console.error(error));
         }
     </script>
     <!--
@@ -124,13 +266,15 @@
         <section>
             <div id="player-infos">
                 <!-- TODO : clean test values (src, name) -->
-                <img id="player-photo" class="profile_picture" src="https://scontent-cdg2-1.xx.fbcdn.net/v/t1.0-1/cp0/p74x74/13600195_1136496996414850_1271288971452209263_n.jpg?_nc_cat=110&_nc_sid=dbb9e7&_nc_oc=AQk6V2g084HMgR2fzsWtZ17Y5XxTGQ-LDC5cNNZpKwi9zQ0-smnntG5TBsvhO17Y88slDXkR0y_-pa1KwV_8_UN4&_nc_ht=scontent-cdg2-1.xx&oh=d0ecef07ad07d333cc678ab101e40107&oe=5EFB777D"
-                />
+                <img id="player-photo" class="profile_picture" />
                 <div id="player-name-container">
                     Antoine
                 </div>
-                <img class="ravioli-pic" src="assets/lil_ravioli.png" />
+                <img class="ravioli-pic" src="assets/lil_ravioli.png" onclick="sendMessage();" />
             </div>
+            <center>
+                <h3 id="score_rank"></h3>
+            </center>
         </section>
         <section id="logo-container">
             <img src="assets/logo.png" id="img-logo">
@@ -143,6 +287,68 @@
             <input type="button" onclick="start();" value="JOUER" />
         </section>
     </div>
+
+
+    <!-- Ecran GAME OVER / REPLAY -->
+    <div id="game_over_menu">
+        <div id="game_over_background">
+            <img id="game_over_image" src="assets/ravioli_couleur.png">
+        </div>
+
+        <div id="game_over_foreground">
+            <h1 id="game_over_head">Game Over</h1>
+            <h2 id="game_over_score">Score ici <br/> Et là</h3>
+                <input id="game_over_replay" type="button" value="REJOUER" onclick="replay()">
+        </div>
+
+        <!--<img id="nappe" src="assets/nappe1.png" width="100%" height="100%">-->
+    </div>
+
+    <script>
+        const ravioli = document.querySelector("#game_over_image");
+        const foreground = document.querySelector("#game_over_foreground");
+        const bg = document.querySelector("#game_over_background");
+        const menu = document.querySelector("#game_over_menu");
+        let topPos = document.body.clientHeight;
+        let maxPos = topPos * 0.1;
+
+        function loser() {
+            menu.style.display = "block";
+            foreground.style.display = "none";
+            topPos -= 10;
+            if (topPos > maxPos) {
+                bg.style.top = topPos + "px";
+                requestAnimationFrame(loser);
+            } else {
+                if (topPos < maxPos) {
+                    topPos = maxPos;
+                    bg.style.top = topPos + "px";
+                }
+                foreground.style.display = "block";
+            }
+        }
+
+        function replay() {
+            topPos = maxPos;
+            foreground.style.display = "none";
+            requestAnimationFrame(replay_bis);
+        }
+
+        function replay_bis() {
+            topPos += 10;
+            if (topPos < document.body.clientHeight) {
+                bg.style.top = topPos + "px";
+                requestAnimationFrame(replay_bis);
+            } else {
+                if (topPos > document.body.clientHeight) {
+                    topPos = document.body.clientHeight;
+                    bg.style.top = topPos + "px";
+                }
+                menu.style.display = "none";
+                startGame();
+            }
+        }
+    </script>
 </body>
 
 </html>
