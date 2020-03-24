@@ -1,5 +1,22 @@
 # Ravioliste-fb_instant_game
-Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la Ravioliste
+Facebook instant game (Jeu instantané) fait pour la campagne AEDI 2020 par la Ravioliste.
+
+## Description du jeu
+### GamePlay
+En incarnant un personnage, qui court indéfiniment, il faut éviter les obstacles en tout genre et attraper le maximum de raviolis afin de faire le plus haut score possible.
+
+### Fonctionnalités
+Les obstacles peuvent 
+* tuer sur contact vertical et horizontal
+* tuer sur contact horizontal et stopper la translation verticale (gravité/saut) sur contact vertical
+Le score augmente continuellement un petit peu
+Un ravioli rapporte 1000 points de score instantanément
+
+### Fonctionnalités Facebook
+* Un message peut être envoyé au lancement du jeu (si messages enable  & ANTI SPAM inactive)
+* Un message peut être envoyé lorsque le meilleur score du joueur est battu (si messages enable & (ANTI SPAM inactive or best_score > 10000))
+* Un message sera envoyé lors d'un clic sur le ravioli en haut à droite de l'écran d'accueil : 'easter egg' utile pour partager le jeu sans afficher la video de présentation
+* Un classement du top 10 des joueurs sera disponbile : **Attention** Ce classement est relatif au *contexte* c'est à dire à la converstation dans laquelle le jeu est joué. Il est en donc de même pour votre meilleur score.
 
 ## Fichiers
 * index.html : affichage html + scripts facebook (score/leaderboard + messages) + scripts d'affichage
