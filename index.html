@@ -22,7 +22,7 @@
         let display = window.Display;
         let bestScore = 0;
         let contextID = null;
-        let displayMessages = false;
+        let displayMessages = true;
 
         window.onload = function() {
             $('#context-section, #send-section').hide();
@@ -41,7 +41,7 @@
             });
 
             //TODO juste pour les tests hors messenger: 
-            downloadAssets();
+            //downloadAssets();
             //TEST
             //new PatternProvider();
         }
@@ -50,7 +50,7 @@
             //init();
             //TODO start the game here
             $('#player-photo').attr('src', FBInstant.player.getPhoto());
-            $('#player-name').html(FBInstant.player.getName());
+            $('#player-name-container').html(FBInstant.player.getName());
             contextID = FBInstant.context.getID();
             fetchBestScore();
         }
@@ -58,7 +58,7 @@
         function start() {
             //hide menu and init
             console.log("start()");
-            sendStartMessage();
+            //Anti spam : sendStartMessage();
             $('#main-menu').hide();
             $('#canvas-container').show();
             startGame();
@@ -144,7 +144,7 @@
             );
         }
 
-        function sendBeatBestscore(bestScore) {
+        function sendBeatBestscore() {
             if (!displayMessages)
                 return;
             let player = FBInstant.player.getName();
@@ -219,7 +219,11 @@
 
             bestScore = score;
             tvScore.innerText = "Nouveau meilleur score !\nVous avez fait " + score;
-            sendBeatBestscore();
+
+            //Anti spam pour le best score :
+            if (score > 10000) {
+                sendBeatBestscore();
+            }
 
             FBInstant
                 .getLeaderboardAsync(getLeaderboardName())
@@ -250,6 +254,62 @@
                         .innerText = "Vous êtes " + entry.getRank() + "e, avec un score " + bestScore;
                 }).catch(error => console.error(error));
         }
+
+        function fetchLeaderboard() {
+            console.log("try to fetch leaderboard");
+            // If the leaderboard name is not found in your
+            // app's configuration, the promise will reject
+            FBInstant.getLeaderboardAsync(getLeaderboardName())
+                .then(function(result) {
+                    console.log("entries found");
+                    return result.getEntriesAsync();
+                })
+                .then(updateLeaderboardEntries)
+                .catch(function(error) {
+                    display.error('Leaderboard is not found in app configuration');
+                });
+        }
+
+        // Print out entries of the leaderboard to the webpage
+        function updateLeaderboardEntries(entries) {
+            console.log("update leaderboard entries : ");
+            console.log(entries);
+            console.log(entries);
+            let list = $('#leaderboard')[0];
+            console.log("leaderboard : ");
+            console.log(leaderboard);
+            let nInnerHTML = '<table style="overflow-y:scroll;position:relative;height:70%;display:block">';
+            entries.forEach(function(entry) {
+                console.log("foreach : ");
+                console.log(entry);
+                nInnerHTML += `
+                <tr>
+                    <td>#${entry.getRank()}</td>
+                    <td>
+                    <img
+                        class="leaderboard_picture"
+                        src="${entry.getPlayer().getPhoto()}"
+                    />
+                    </td>
+                    <td>${entry.getScore()}</td>
+                </tr>
+                `;
+            });
+            nInnerHTML += "</table>"
+            nInnerHTML +=
+                `
+                <input type="button" onclick="hideLeaderboard();" style="position:relative;width:80%;left:10%;top=90%;height=10%;" value="OK" />
+                `;
+            list.innerHTML = nInnerHTML;
+            console.log("entries loaded, leaderboard : ");
+            console.log(leaderboard);
+            list.style.display = "block";
+        }
+
+        function hideLeaderboard() {
+            let list = $('#leaderboard')[0];
+            list.style.display = "none";
+        }
     </script>
     <!--
     <section id="test-message">
@@ -268,23 +328,17 @@
                 <!-- TODO : clean test values (src, name) -->
                 <img id="player-photo" class="profile_picture" />
                 <div id="player-name-container">
-                    Antoine
+
                 </div>
                 <img class="ravioli-pic" src="assets/lil_ravioli.png" onclick="sendMessage();" />
             </div>
-            <center>
-                <h3 id="score_rank"></h3>
-            </center>
+            <h3 id="score_rank">Score rank</h3>
         </section>
         <section id="logo-container">
             <img src="assets/logo.png" id="img-logo">
-            <center>
-                <h1 class="title">Ravioliste</h1>
-            </center>
-        </section>
-
-        <section id="interaction-button">
+            <h1 class="title">Ravioliste</h1>
             <input type="button" onclick="start();" value="JOUER" />
+            <input type="button" style="background-color: #CD2319;font-size: 1.3em;" onclick="fetchLeaderboard();" value="Classement" />
         </section>
     </div>
 
@@ -297,11 +351,13 @@
 
         <div id="game_over_foreground">
             <h1 id="game_over_head">Game Over</h1>
-            <h2 id="game_over_score">Score ici <br/> Et là</h3>
+            <h2 id="game_over_score">Score ici <br /> Et là</h3>
                 <input id="game_over_replay" type="button" value="REJOUER" onclick="replay()">
         </div>
+    </div>
 
-        <!--<img id="nappe" src="assets/nappe1.png" width="100%" height="100%">-->
+    <!-- Leader board view -->
+    <div id="leaderboard" style="display: none;">
     </div>
 
     <script>
